@@ -385,6 +385,28 @@ body {
     gap: 10px;
 }
 
+.edit-info {
+    background: #e8f4f8;
+    border: 1px solid #bee5eb;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    color: #0c5460;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.edit-info i.fa-info-circle {
+    color: #17a2b8;
+}
+
+.edit-info i.fa-edit {
+    color: #3498db;
+    font-size: 0.8rem;
+}
+
 .table-container {
     overflow-x: auto;
     border-radius: 10px;

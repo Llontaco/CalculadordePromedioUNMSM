@@ -246,7 +246,7 @@ class UNMSMCalculator {
         const tbody = document.getElementById('courses-tbody');
         tbody.innerHTML = '';
 
-        courses.forEach(course => {
+        courses.forEach((course, index) => {
             const row = document.createElement('tr');
             const points = (course.note * course.credits).toFixed(1);
             
@@ -261,9 +261,19 @@ class UNMSMCalculator {
                 <td>${course.period || 'N/A'}</td>
                 <td class="course-code-cell"><strong>${course.code}</strong></td>
                 <td class="course-name-cell">${course.name}</td>
-                <td class="${gradeClass}"><strong>${course.note}</strong></td>
+                <td class="${gradeClass}">
+                    <div class="grade-container">
+                        <span class="grade-display" id="grade-${index}">${course.note}</span>
+                        <input type="number" class="grade-input" id="input-${index}" 
+                               value="${course.note}" min="0" max="20" step="1" style="display: none;">
+                        <button class="edit-grade-btn" onclick="window.calculator.editGrade(${index})" 
+                                title="Editar nota">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                </td>
                 <td>${course.credits}</td>
-                <td>${points}</td>
+                <td class="points-cell" id="points-${index}">${points}</td>
             `;
             tbody.appendChild(row);
         });
@@ -294,11 +304,125 @@ class UNMSMCalculator {
                 font-size: 14px; 
                 color: #2c3e50; 
             }
+            .grade-container {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                justify-content: center;
+            }
+            .edit-grade-btn {
+                background: none;
+                border: none;
+                color: #3498db;
+                cursor: pointer;
+                padding: 4px;
+                border-radius: 3px;
+                font-size: 12px;
+                opacity: 0.7;
+                transition: all 0.3s ease;
+            }
+            .edit-grade-btn:hover {
+                opacity: 1;
+                background: #ecf0f1;
+            }
+            .grade-input {
+                width: 50px;
+                padding: 4px;
+                border: 2px solid #3498db;
+                border-radius: 4px;
+                text-align: center;
+                font-weight: bold;
+            }
+            .grade-display {
+                font-weight: bold;
+                min-width: 25px;
+                text-align: center;
+            }
+            .editing {
+                background-color: #ebf3fd !important;
+            }
         `;
         if (!document.querySelector('style[data-grades]')) {
             style.setAttribute('data-grades', 'true');
             document.head.appendChild(style);
         }
+    }
+
+    editGrade(courseIndex) {
+        const gradeDisplay = document.getElementById(`grade-${courseIndex}`);
+        const gradeInput = document.getElementById(`input-${courseIndex}`);
+        const row = gradeDisplay.closest('tr');
+        
+        if (gradeInput.style.display === 'none') {
+            // Entrar en modo edición
+            gradeDisplay.style.display = 'none';
+            gradeInput.style.display = 'inline-block';
+            gradeInput.focus();
+            gradeInput.select();
+            row.classList.add('editing');
+            
+            // Agregar event listeners para guardar
+            const saveGrade = () => {
+                const newGrade = parseInt(gradeInput.value);
+                if (newGrade >= 0 && newGrade <= 20) {
+                    this.updateCourseGrade(courseIndex, newGrade);
+                    gradeDisplay.textContent = newGrade;
+                    gradeDisplay.style.display = 'inline-block';
+                    gradeInput.style.display = 'none';
+                    row.classList.remove('editing');
+                    
+                    // Actualizar color de la nota
+                    const gradeCell = gradeDisplay.closest('td');
+                    gradeCell.className = '';
+                    if (newGrade >= 16) gradeCell.classList.add('grade-excellent');
+                    else if (newGrade >= 14) gradeCell.classList.add('grade-good');
+                    else if (newGrade >= 11) gradeCell.classList.add('grade-pass');
+                    else gradeCell.classList.add('grade-fail');
+                    
+                    // Actualizar puntos
+                    const course = this.courses[courseIndex];
+                    const newPoints = (newGrade * course.credits).toFixed(1);
+                    document.getElementById(`points-${courseIndex}`).textContent = newPoints;
+                    
+                    // Recalcular promedio automáticamente
+                    this.calculateAverage();
+                    
+                    this.showMessage(`Nota actualizada: ${course.code} - ${course.name.substring(0, 30)}... (${newGrade})`, 'success');
+                } else {
+                    this.showMessage('La nota debe estar entre 0 y 20', 'error');
+                    gradeInput.focus();
+                }
+            };
+            
+            const cancelEdit = () => {
+                gradeDisplay.style.display = 'inline-block';
+                gradeInput.style.display = 'none';
+                row.classList.remove('editing');
+                gradeInput.value = gradeDisplay.textContent; // Restaurar valor original
+            };
+            
+            // Guardar con Enter
+            gradeInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    saveGrade();
+                }
+                if (e.key === 'Escape') {
+                    cancelEdit();
+                }
+            });
+            
+            // Guardar al perder foco
+            gradeInput.addEventListener('blur', saveGrade);
+        }
+    }
+
+    updateCourseGrade(courseIndex, newGrade) {
+        // Actualizar en el array de cursos
+        this.courses[courseIndex].note = newGrade;
+        this.courses[courseIndex].isApproved = newGrade >= 11;
+        this.courses[courseIndex].editedByUser = true; // Marcar como editado por usuario
+        
+        console.log(`📝 Usuario editó nota: ${this.courses[courseIndex].code} - Nota: ${newGrade}`);
     }
 
     showCoursesExtracted(count) {
@@ -474,3 +598,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, index * 200);
     });
 });
+
+// Inicializar la aplicación y hacer la instancia global
+window.calculator = new UNMSMCalculator();
