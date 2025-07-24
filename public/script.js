@@ -384,8 +384,8 @@ class UNMSMCalculator {
                     const newPoints = (newGrade * course.credits).toFixed(1);
                     document.getElementById(`points-${courseIndex}`).textContent = newPoints;
                     
-                    // Recalcular promedio automáticamente
-                    this.calculateAverage();
+                    // Recalcular promedio SIN regenerar la tabla
+                    this.calculateAverageOnly();
                     
                     this.showMessage(`Nota actualizada: ${course.code} - ${course.name.substring(0, 30)}... (${newGrade})`, 'success');
                 } else {
@@ -423,6 +423,59 @@ class UNMSMCalculator {
         this.courses[courseIndex].editedByUser = true; // Marcar como editado por usuario
         
         console.log(`📝 Usuario editó nota: ${this.courses[courseIndex].code} - Nota: ${newGrade}`);
+    }
+
+    // Nueva función que solo recalcula los valores sin regenerar la tabla
+    async calculateAverageOnly() {
+        try {
+            const selectedPeriod = document.getElementById('period-select').value;
+            
+            const response = await fetch('/calculate-average', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    courses: this.courses,
+                    selectedPeriod: selectedPeriod
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Solo actualizar los valores numéricos, NO regenerar la tabla
+                this.updateSummaryOnly(result.result);
+            } else {
+                this.showMessage(result.error, 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            this.showMessage('Error recalculando el promedio: ' + error.message, 'error');
+        }
+    }
+
+    // Nueva función que solo actualiza los valores del resumen
+    updateSummaryOnly(result) {
+        // Update summary values
+        document.getElementById('average-value').textContent = result.weightedAverage.toFixed(3);
+        document.getElementById('total-credits').textContent = result.totalCredits;
+        document.getElementById('approved-credits').textContent = result.approvedCredits;
+        document.getElementById('total-courses').textContent = result.courses.length;
+
+        // Color code the average
+        const averageElement = document.getElementById('average-value');
+        const average = result.weightedAverage;
+        
+        if (average >= 16) {
+            averageElement.style.color = '#27ae60'; // Green
+        } else if (average >= 14) {
+            averageElement.style.color = '#f39c12'; // Orange
+        } else if (average >= 11) {
+            averageElement.style.color = '#e67e22'; // Dark orange
+        } else {
+            averageElement.style.color = '#e74c3c'; // Red
+        }
     }
 
     showCoursesExtracted(count) {
