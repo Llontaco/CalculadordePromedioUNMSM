@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Promedio Ponderado UNMSM</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <h1>Calculadora UNMSM</h1>
+            </div>
+            <p class="subtitle">Promedio Ponderado con Análisis IA de PDF</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Step 1: Upload PDF -->
+            <section class="step-section" id="upload-section">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <h2>Subir Historial Académico (PDF)</h2>
+                </div>
+                
+                <div class="upload-zone" id="upload-zone">
+                    <div class="upload-content">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Arrastra tu PDF aquí o haz clic para seleccionar</p>
+                        <small>Solo archivos PDF (máx. 10MB)</small>
+                    </div>
+                    <input type="file" id="pdf-input" accept=".pdf" hidden>
+                </div>
+                
+                <div class="loading" id="loading" style="display: none;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Analizando PDF con IA...</p>
+                </div>
+            </section>
+
+            <!-- Step 2: Select Period -->
+            <section class="step-section" id="period-section" style="display: none;">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <h2>Seleccionar Período Límite para el Cálculo</h2>
+                </div>
+                
+                <div class="period-selector">
+                    <div class="period-info">
+                        <h4><i class="fas fa-info-circle"></i> ¿Por qué seleccionar un período límite?</h4>
+                        <p>Puedes calcular tu promedio ponderado hasta un período específico. Esto es útil para:</p>
+                        <ul>
+                            <li>Ver tu progreso académico por etapas</li>
+                            <li>Calcular promedio para becas o programas específicos</li>
+                            <li>Comparar tu rendimiento entre diferentes períodos</li>
+                            <li>Excluir períodos con notas incompletas o en curso</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="period-selector-control">
+                        <label for="period-select">
+                            <i class="fas fa-calendar-alt"></i>
+                            Calcular promedio hasta el período:
+                        </label>
+                        <select id="period-select">
+                            <option value="">📊 Todos los períodos disponibles</option>
+                        </select>
+                        <small>
+                            <i class="fas fa-lightbulb"></i>
+                            <strong>Sugerencia:</strong> Si tienes notas incompletas en el último período, selecciona el período anterior.
+                        </small>
+                    </div>
+                    
+                    <div class="period-preview" id="period-preview" style="display: none;">
+                        <h5>Vista previa de períodos incluidos:</h5>
+                        <div id="periods-list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 3: Results -->
+            <section class="step-section" id="results-section" style="display: none;">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <h2>Resultados del Cálculo</h2>
+                </div>
+                
+                <div class="results-container">
+                    <div class="summary-card">
+                        <div class="average-display">
+                            <div class="average-value" id="average-value">--</div>
+                            <div class="average-label">Promedio Ponderado</div>
+                        </div>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value" id="total-credits">--</div>
+                                <div class="stat-label">Creditaje Total</div>
+                                <div class="stat-description">(Incluyendo desaprobados)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="approved-credits">--</div>
+                                <div class="stat-label">Créditos Aprobados</div>
+                                <div class="stat-description">(Nota ≥ 11)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="total-courses">--</div>
+                                <div class="stat-label">Cursos Evaluados</div>
+                                <div class="stat-description">(Sin duplicados)</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="formula-explanation">
+                        <h3><i class="fas fa-calculator"></i> Fórmula UNMSM Aplicada:</h3>
+                        <div class="formula">
+                            Promedio = Σ(nota × créditos) / Σ(créditos válidos)
+                        </div>
+                        <p>Se considera solo la mejor nota en cursos repetidos y se excluyen notas de 0.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Courses Table -->
+            <section class="courses-section" id="courses-section" style="display: none;">
+                <h3><i class="fas fa-list"></i> Cursos Incluidos en el Cálculo</h3>
+                <div class="table-container">
+                    <table id="courses-table">
+                        <thead>
+                            <tr>
+                                <th>Período</th>
+                                <th>Código</th>
+                                <th>Curso</th>
+                                <th>Nota</th>
+                                <th>Créditos</th>
+                                <th>Puntos</th>
+                            </tr>
+                        </thead>
+                        <tbody id="courses-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button id="calculate-btn" class="btn btn-primary" style="display: none;">
+                    <i class="fas fa-calculator"></i>
+                    Calcular Promedio
+                </button>
+                <button id="reset-btn" class="btn btn-secondary" style="display: none;">
+                    <i class="fas fa-redo"></i>
+                    Nuevo Cálculo
+                </button>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Calculadora basada en la fórmula oficial de la Universidad Nacional Mayor de San Marcos</p>
+            <p><small>Desarrollado para estudiantes UNMSM</small></p>
+        </footer>
+
+        <!-- Error/Success Messages -->
+        <div id="message-container"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

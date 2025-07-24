@@ -1,0 +1,551 @@
+/* Reset y variables CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #2c5aa0;
+    --secondary-color: #1e3d6f;
+    --accent-color: #f39c12;
+    --success-color: #27ae60;
+    --warning-color: #e74c3c;
+    --light-bg: #f8f9fa;
+    --white: #ffffff;
+    --text-dark: #2c3e50;
+    --text-light: #7f8c8d;
+    --border-color: #dee2e6;
+    --shadow: 0 2px 10px rgba(0,0,0,0.1);
+    --shadow-hover: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: var(--text-dark);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+    background: var(--white);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.logo i {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+}
+
+.logo h1 {
+    color: var(--primary-color);
+    font-size: 2.2rem;
+    font-weight: 600;
+}
+
+.subtitle {
+    color: var(--text-light);
+    font-size: 1.1rem;
+}
+
+/* Step Sections */
+.step-section {
+    background: var(--white);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease;
+}
+
+.step-section:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.step-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--light-bg);
+}
+
+.step-number {
+    background: var(--primary-color);
+    color: var(--white);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.step-header h2 {
+    color: var(--text-dark);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Upload Zone */
+.upload-zone {
+    border: 3px dashed var(--border-color);
+    border-radius: 10px;
+    padding: 50px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--light-bg);
+}
+
+.upload-zone:hover,
+.upload-zone.dragover {
+    border-color: var(--primary-color);
+    background: rgba(44, 90, 160, 0.05);
+}
+
+.upload-content i {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.upload-content p {
+    font-size: 1.2rem;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.upload-content small {
+    color: var(--text-light);
+}
+
+/* Loading */
+.loading {
+    text-align: center;
+    padding: 30px;
+}
+
+.loading i {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.loading p {
+    color: var(--text-light);
+    font-size: 1.1rem;
+}
+
+/* Period Selector */
+.period-selector {
+    text-align: left;
+}
+
+.period-info {
+    background: var(--light-bg);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.period-info h4 {
+    color: var(--text-dark);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.period-info h4 i {
+    color: var(--primary-color);
+}
+
+.period-info p {
+    margin-bottom: 12px;
+    color: var(--text-dark);
+}
+
+.period-info ul {
+    margin-left: 20px;
+    color: var(--text-dark);
+}
+
+.period-info li {
+    margin-bottom: 5px;
+}
+
+.period-selector-control {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid var(--border-color);
+    margin-bottom: 20px;
+}
+
+.period-selector-control label {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.period-selector-control label i {
+    color: var(--primary-color);
+}
+
+.period-selector select {
+    padding: 15px 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1.1rem;
+    background: var(--white);
+    color: var(--text-dark);
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.period-selector select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+.period-selector-control small {
+    display: block;
+    margin-top: 15px;
+    color: var(--text-light);
+    font-style: italic;
+    padding: 10px;
+    background: rgba(243, 156, 18, 0.1);
+    border-radius: 6px;
+    border-left: 3px solid var(--accent-color);
+}
+
+.period-selector-control small i {
+    color: var(--accent-color);
+    margin-right: 5px;
+}
+
+.period-preview {
+    background: var(--light-bg);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.period-preview h5 {
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+#periods-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.period-chip {
+    background: var(--primary-color);
+    color: var(--white);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.period-chip.excluded {
+    background: var(--text-light);
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+/* Results */
+.results-container {
+    display: grid;
+    gap: 30px;
+}
+
+.summary-card {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: var(--white);
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.average-display {
+    margin-bottom: 30px;
+}
+
+.average-value {
+    font-size: 3.5rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.average-label {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.stat-item {
+    background: rgba(255,255,255,0.1);
+    padding: 20px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* Formula Explanation */
+.formula-explanation {
+    background: var(--light-bg);
+    padding: 25px;
+    border-radius: 10px;
+    border-left: 4px solid var(--accent-color);
+}
+
+.formula-explanation h3 {
+    color: var(--text-dark);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.formula {
+    background: var(--white);
+    padding: 15px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    text-align: center;
+    margin: 15px 0;
+    border: 1px solid var(--border-color);
+}
+
+/* Table */
+.courses-section {
+    background: var(--white);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: var(--shadow);
+}
+
+.courses-section h3 {
+    margin-bottom: 20px;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.table-container {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+th {
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+tbody tr:hover {
+    background: var(--light-bg);
+}
+
+tbody tr:nth-child(even) {
+    background: rgba(44, 90, 160, 0.02);
+}
+
+/* Buttons */
+.action-buttons {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.btn {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 10px;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.btn-secondary {
+    background: var(--text-light);
+    color: var(--white);
+}
+
+.btn-secondary:hover {
+    background: var(--text-dark);
+    transform: translateY(-2px);
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    margin-top: 50px;
+    padding: 20px;
+    color: var(--white);
+    opacity: 0.8;
+}
+
+/* Messages */
+#message-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.message {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    color: var(--white);
+    font-weight: 500;
+    animation: slideIn 0.3s ease;
+    cursor: pointer;
+}
+
+.message.success {
+    background: var(--success-color);
+}
+
+.message.error {
+    background: var(--warning-color);
+}
+
+.message.info {
+    background: var(--primary-color);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .logo h1 {
+        font-size: 1.8rem;
+    }
+    
+    .step-section {
+        padding: 20px;
+    }
+    
+    .upload-zone {
+        padding: 30px 15px;
+    }
+    
+    .average-value {
+        font-size: 2.5rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .btn {
+        display: block;
+        margin: 10px 0;
+    }
+    
+    th, td {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+    }
+}
