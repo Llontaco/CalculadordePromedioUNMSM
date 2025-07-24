@@ -257,23 +257,26 @@ class UNMSMCalculator {
             else if (course.note >= 11) gradeClass = 'grade-pass';
             else gradeClass = 'grade-fail';
 
+            // Usar el código del curso como identificador único en lugar del índice
+            const courseId = course.code;
+
             row.innerHTML = `
                 <td>${course.period || 'N/A'}</td>
                 <td class="course-code-cell"><strong>${course.code}</strong></td>
                 <td class="course-name-cell">${course.name}</td>
                 <td class="${gradeClass}">
                     <div class="grade-container">
-                        <span class="grade-display" id="grade-${index}">${course.note}</span>
-                        <input type="number" class="grade-input" id="input-${index}" 
+                        <span class="grade-display" id="grade-${courseId}">${course.note}</span>
+                        <input type="number" class="grade-input" id="input-${courseId}" 
                                value="${course.note}" min="0" max="20" step="1" style="display: none;">
-                        <button class="edit-grade-btn" onclick="window.calculator.editGrade(${index})" 
+                        <button class="edit-grade-btn" onclick="window.calculator.editGradeByCode('${courseId}')" 
                                 title="Editar nota">
                             <i class="fas fa-edit"></i>
                         </button>
                     </div>
                 </td>
                 <td>${course.credits}</td>
-                <td class="points-cell" id="points-${index}">${points}</td>
+                <td class="points-cell" id="points-${courseId}">${points}</td>
             `;
             tbody.appendChild(row);
         });
@@ -348,12 +351,24 @@ class UNMSMCalculator {
         }
     }
 
-    editGrade(courseIndex) {
-        const gradeDisplay = document.getElementById(`grade-${courseIndex}`);
-        const gradeInput = document.getElementById(`input-${courseIndex}`);
+    editGradeByCode(courseCode) {
+        // Buscar el curso por código en lugar de usar índice
+        const courseIndex = this.courses.findIndex(course => course.code === courseCode);
+        
+        if (courseIndex === -1) {
+            this.showMessage('Error: Curso no encontrado', 'error');
+            return;
+        }
+
+        const course = this.courses[courseIndex];
+        const gradeDisplay = document.getElementById(`grade-${courseCode}`);
+        const gradeInput = document.getElementById(`input-${courseCode}`);
         const row = gradeDisplay.closest('tr');
         
         if (gradeInput.style.display === 'none') {
+            // Almacenar la nota original para comparación
+            const originalGrade = course.note;
+            
             // Entrar en modo edición
             gradeDisplay.style.display = 'none';
             gradeInput.style.display = 'inline-block';
@@ -365,31 +380,46 @@ class UNMSMCalculator {
             const saveGrade = () => {
                 const newGrade = parseInt(gradeInput.value);
                 if (newGrade >= 0 && newGrade <= 20) {
-                    this.updateCourseGrade(courseIndex, newGrade);
-                    gradeDisplay.textContent = newGrade;
-                    gradeDisplay.style.display = 'inline-block';
-                    gradeInput.style.display = 'none';
-                    row.classList.remove('editing');
-                    
-                    // Actualizar color de la nota
-                    const gradeCell = gradeDisplay.closest('td');
-                    gradeCell.className = '';
-                    if (newGrade >= 16) gradeCell.classList.add('grade-excellent');
-                    else if (newGrade >= 14) gradeCell.classList.add('grade-good');
-                    else if (newGrade >= 11) gradeCell.classList.add('grade-pass');
-                    else gradeCell.classList.add('grade-fail');
-                    
-                    // Actualizar puntos
-                    const course = this.courses[courseIndex];
-                    const newPoints = (newGrade * course.credits).toFixed(1);
-                    document.getElementById(`points-${courseIndex}`).textContent = newPoints;
-                    
-                    // Recalcular promedio SIN regenerar la tabla
-                    this.calculateAverageOnly();
-                    
-                    this.showMessage(`Nota actualizada: ${course.code} - ${course.name.substring(0, 30)}... (${newGrade})`, 'success');
+                    // Solo actualizar si la nota realmente cambió
+                    if (newGrade !== originalGrade) {
+                        console.log(`📝 Actualizando nota: ${courseCode} de ${originalGrade} a ${newGrade}`);
+                        
+                        // Actualizar en el array de cursos
+                        this.courses[courseIndex].note = newGrade;
+                        this.courses[courseIndex].isApproved = newGrade >= 11;
+                        this.courses[courseIndex].editedByUser = true;
+                        
+                        // Actualizar interfaz
+                        gradeDisplay.textContent = newGrade;
+                        gradeDisplay.style.display = 'inline-block';
+                        gradeInput.style.display = 'none';
+                        row.classList.remove('editing');
+                        
+                        // Actualizar color de la nota
+                        const gradeCell = gradeDisplay.closest('td');
+                        gradeCell.className = '';
+                        if (newGrade >= 16) gradeCell.classList.add('grade-excellent');
+                        else if (newGrade >= 14) gradeCell.classList.add('grade-good');
+                        else if (newGrade >= 11) gradeCell.classList.add('grade-pass');
+                        else gradeCell.classList.add('grade-fail');
+                        
+                        // Actualizar puntos
+                        const newPoints = (newGrade * course.credits).toFixed(1);
+                        document.getElementById(`points-${courseCode}`).textContent = newPoints;
+                        
+                        // Recalcular promedio SIN regenerar la tabla
+                        this.calculateAverageOnly();
+                        
+                        // Mensaje de confirmación con información correcta
+                        this.showMessage(`✅ Nota actualizada: ${courseCode} - ${course.name.substring(0, 30)}... (${originalGrade} → ${newGrade})`, 'success');
+                    } else {
+                        // No hubo cambio, solo salir del modo edición
+                        gradeDisplay.style.display = 'inline-block';
+                        gradeInput.style.display = 'none';
+                        row.classList.remove('editing');
+                    }
                 } else {
-                    this.showMessage('La nota debe estar entre 0 y 20', 'error');
+                    this.showMessage('❌ La nota debe estar entre 0 y 20', 'error');
                     gradeInput.focus();
                 }
             };
@@ -398,15 +428,17 @@ class UNMSMCalculator {
                 gradeDisplay.style.display = 'inline-block';
                 gradeInput.style.display = 'none';
                 row.classList.remove('editing');
-                gradeInput.value = gradeDisplay.textContent; // Restaurar valor original
+                gradeInput.value = originalGrade; // Restaurar valor original
             };
             
             // Guardar con Enter
             gradeInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
+                    e.preventDefault();
                     saveGrade();
                 }
                 if (e.key === 'Escape') {
+                    e.preventDefault();
                     cancelEdit();
                 }
             });
@@ -416,19 +448,41 @@ class UNMSMCalculator {
         }
     }
 
+    // Mantener la función anterior para compatibilidad, pero marcarla como deprecated
+    editGrade(courseIndex) {
+        console.warn('editGrade(index) está deprecated, usar editGradeByCode(code)');
+        if (courseIndex < this.courses.length) {
+            const courseCode = this.courses[courseIndex].code;
+            this.editGradeByCode(courseCode);
+        }
+    }
+
     updateCourseGrade(courseIndex, newGrade) {
-        // Actualizar en el array de cursos
-        this.courses[courseIndex].note = newGrade;
-        this.courses[courseIndex].isApproved = newGrade >= 11;
-        this.courses[courseIndex].editedByUser = true; // Marcar como editado por usuario
-        
-        console.log(`📝 Usuario editó nota: ${this.courses[courseIndex].code} - Nota: ${newGrade}`);
+        // Función simplificada - usar editGradeByCode para nuevas implementaciones
+        if (courseIndex < this.courses.length) {
+            this.courses[courseIndex].note = newGrade;
+            this.courses[courseIndex].isApproved = newGrade >= 11;
+            this.courses[courseIndex].editedByUser = true;
+            
+            console.log(`📝 Nota actualizada: ${this.courses[courseIndex].code} - Nota: ${newGrade}`);
+        }
     }
 
     // Nueva función que solo recalcula los valores sin regenerar la tabla
     async calculateAverageOnly() {
         try {
+            console.log('🔄 Recalculando promedio con datos actualizados...');
+            
             const selectedPeriod = document.getElementById('period-select').value;
+            
+            // Mostrar información de cursos editados para verificación
+            const editedCourses = this.courses.filter(course => course.editedByUser);
+            if (editedCourses.length > 0) {
+                console.log('📝 Cursos editados por el usuario:');
+                editedCourses.forEach(course => {
+                    console.log(`   ${course.code}: ${course.note} (${course.note >= 11 ? 'Aprobado' : 'Desaprobado'})`);
+                });
+            }
             
             const response = await fetch('/calculate-average', {
                 method: 'POST',
@@ -444,6 +498,7 @@ class UNMSMCalculator {
             const result = await response.json();
 
             if (result.success) {
+                console.log('✅ Promedio recalculado:', result.result.weightedAverage.toFixed(3));
                 // Solo actualizar los valores numéricos, NO regenerar la tabla
                 this.updateSummaryOnly(result.result);
             } else {
@@ -457,6 +512,13 @@ class UNMSMCalculator {
 
     // Nueva función que solo actualiza los valores del resumen
     updateSummaryOnly(result) {
+        console.log('📊 Actualizando resumen con nuevos valores:', {
+            promedio: result.weightedAverage.toFixed(3),
+            totalCreditos: result.totalCredits,
+            creditosAprobados: result.approvedCredits,
+            totalCursos: result.courses.length
+        });
+
         // Update summary values
         document.getElementById('average-value').textContent = result.weightedAverage.toFixed(3);
         document.getElementById('total-credits').textContent = result.totalCredits;
@@ -476,6 +538,8 @@ class UNMSMCalculator {
         } else {
             averageElement.style.color = '#e74c3c'; // Red
         }
+        
+        console.log('✅ Resumen actualizado en la interfaz');
     }
 
     showCoursesExtracted(count) {

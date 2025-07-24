@@ -763,6 +763,15 @@ function calculateWeightedAverage(courses, selectedPeriod) {
     console.log('=== PROCESAMIENTO DE DUPLICADOS UNMSM ===');
     console.log(`Cursos antes de procesar duplicados: ${filteredCourses.length}`);
     
+    // Mostrar cursos editados por el usuario
+    const editedCourses = filteredCourses.filter(course => course.editedByUser);
+    if (editedCourses.length > 0) {
+        console.log('📝 CURSOS EDITADOS POR EL USUARIO:');
+        editedCourses.forEach(course => {
+            console.log(`   ${course.code} - ${course.name.substring(0, 30)}... | Nota: ${course.note} | Aprobado: ${course.note >= 11 ? 'SÍ' : 'NO'}`);
+        });
+    }
+    
     // Función para normalizar nombres de cursos para comparación
     function normalizeName(name) {
         return name.toLowerCase()
@@ -796,22 +805,69 @@ function calculateWeightedAverage(courses, selectedPeriod) {
         let duplicateInfo = '';
         
         if (isDuplicateByCode) {
-            // Duplicado por código
-            if (course.note > uniqueCourses[codeKey].note) {
+            // Duplicado por código - dar prioridad a cursos editados por usuario
+            const existingCourse = uniqueCourses[codeKey];
+            
+            // Si el curso actual fue editado por usuario, siempre toma prioridad
+            if (course.editedByUser && !existingCourse.editedByUser) {
                 shouldReplace = true;
-                duplicateInfo = `código ${codeKey}: nota ${uniqueCourses[codeKey].note} → ${course.note}`;
-            } else {
-                duplicateInfo = `código ${codeKey}: nota ${course.note} (ya existe ${uniqueCourses[codeKey].note})`;
+                duplicateInfo = `código ${codeKey}: EDITADO POR USUARIO ${existingCourse.note} → ${course.note}`;
+            }
+            // Si ambos fueron editados por usuario, usar la mejor nota
+            else if (course.editedByUser && existingCourse.editedByUser) {
+                if (course.note > existingCourse.note) {
+                    shouldReplace = true;
+                    duplicateInfo = `código ${codeKey}: AMBOS EDITADOS, mejor nota ${existingCourse.note} → ${course.note}`;
+                } else {
+                    duplicateInfo = `código ${codeKey}: AMBOS EDITADOS, mantener ${existingCourse.note} > ${course.note}`;
+                }
+            }
+            // Si ninguno fue editado, usar nota más alta (comportamiento original)
+            else if (!course.editedByUser && !existingCourse.editedByUser) {
+                if (course.note > existingCourse.note) {
+                    shouldReplace = true;
+                    duplicateInfo = `código ${codeKey}: nota ${existingCourse.note} → ${course.note}`;
+                } else {
+                    duplicateInfo = `código ${codeKey}: nota ${course.note} (ya existe ${existingCourse.note})`;
+                }
+            }
+            // Si el existente fue editado por usuario pero el actual no, mantener el existente
+            else {
+                duplicateInfo = `código ${codeKey}: MANTENER EDITADO ${existingCourse.note} vs original ${course.note}`;
             }
         } else if (isDuplicateByName) {
-            // Duplicado por nombre (diferentes códigos)
-            if (course.note > coursesByName[nameKey].note) {
-                // Remover el curso anterior del mapa de códigos
-                delete uniqueCourses[coursesByName[nameKey].code];
+            // Duplicado por nombre (diferentes códigos) - también considerar ediciones de usuario
+            const existingCourse = coursesByName[nameKey];
+            
+            // Priorizar cursos editados por usuario
+            if (course.editedByUser && !existingCourse.editedByUser) {
+                delete uniqueCourses[existingCourse.code];
                 shouldReplace = true;
-                duplicateInfo = `nombre "${course.name}": ${coursesByName[nameKey].code}(${coursesByName[nameKey].note}) → ${codeKey}(${course.note})`;
-            } else {
-                duplicateInfo = `nombre "${course.name}": ${codeKey}(${course.note}) (ya existe ${coursesByName[nameKey].code}(${coursesByName[nameKey].note}))`;
+                duplicateInfo = `nombre "${course.name}": EDITADO POR USUARIO ${existingCourse.code}(${existingCourse.note}) → ${codeKey}(${course.note})`;
+            }
+            // Si ambos editados, usar mejor nota
+            else if (course.editedByUser && existingCourse.editedByUser) {
+                if (course.note > existingCourse.note) {
+                    delete uniqueCourses[existingCourse.code];
+                    shouldReplace = true;
+                    duplicateInfo = `nombre "${course.name}": AMBOS EDITADOS ${existingCourse.code}(${existingCourse.note}) → ${codeKey}(${course.note})`;
+                } else {
+                    duplicateInfo = `nombre "${course.name}": AMBOS EDITADOS, mantener ${existingCourse.code}(${existingCourse.note}) > ${codeKey}(${course.note})`;
+                }
+            }
+            // Comportamiento original para cursos no editados
+            else if (!course.editedByUser && !existingCourse.editedByUser) {
+                if (course.note > existingCourse.note) {
+                    delete uniqueCourses[existingCourse.code];
+                    shouldReplace = true;
+                    duplicateInfo = `nombre "${course.name}": ${existingCourse.code}(${existingCourse.note}) → ${codeKey}(${course.note})`;
+                } else {
+                    duplicateInfo = `nombre "${course.name}": ${codeKey}(${course.note}) (ya existe ${existingCourse.code}(${existingCourse.note}))`;
+                }
+            }
+            // Mantener existente si fue editado por usuario
+            else {
+                duplicateInfo = `nombre "${course.name}": MANTENER EDITADO ${existingCourse.code}(${existingCourse.note}) vs original ${codeKey}(${course.note})`;
             }
         }
         
