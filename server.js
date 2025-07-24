@@ -339,14 +339,59 @@ function extractCourses(text) {
         if (line.includes('202SW0305') && line.includes('INTRODUCCIÓN')) {
             console.log('🎯 Curso de INTRODUCCIÓN AL DESARROLLO detectado:', line);
             
+            // Buscar múltiples líneas para encontrar la nota real
             const nextLine = lines[lineIndex + 1] || '';
-            const combinedText = line + ' ' + nextLine;
+            const nextLine2 = lines[lineIndex + 2] || '';
+            const prevLine = lines[lineIndex - 1] || '';
+            const combinedText = prevLine + ' ' + line + ' ' + nextLine + ' ' + nextLine2;
             
-            const gradeMatch = combinedText.match(/(\d{1,2})[\s\d]*3[\s\d]*[PAE]/);
-            let note = 12; // Valor por defecto
+            console.log('🔍 Texto combinado para INTRODUCCIÓN AL DESARROLLO:', combinedText.substring(0, 200));
+            
+            // Múltiples patrones para extraer la nota correctamente
+            const gradeMatch = combinedText.match(/INTRODUCCIÓN.*?(\d{1,2})[\d\s]*3[\d\s]*\.?\d*[PAE]/) || // INTRODUCCIÓN seguido de nota y 3 créditos
+                              combinedText.match(/202SW0305.*?(\d{1,2})[\d\s]*3[\d\s]*\.?\d*[PAE]/) || // Código seguido de nota y 3 créditos
+                              combinedText.match(/(\d{1,2})[\d\s]*3[\d\s]*\.?\d*[PAE].*?INTRODUCCIÓN/) || // Nota con 3 créditos antes de INTRODUCCIÓN
+                              combinedText.match(/(\d{1,2})\d\.?\d*[PAE].*?INTRODUCCIÓN/) || // Nota con decimales antes de INTRODUCCIÓN
+                              combinedText.match(/DESARROLLO.*?(\d{1,2})[\d\s]*3/) || // Después de DESARROLLO
+                              combinedText.match(/SOFTWARE.*?(\d{1,2})[\d\s]*3/) || // Después de SOFTWARE
+                              combinedText.match(/(\d{1,2})[\s\d]*[PAE]/); // Patrón general
+            
+            let note = 0; // Valor inicial sin sesgo
             
             if (gradeMatch) {
-                note = parseInt(gradeMatch[1]);
+                const extractedNote = parseInt(gradeMatch[1]);
+                if (extractedNote >= 0 && extractedNote <= 20 && extractedNote !== 3 && extractedNote !== 1) {
+                    note = extractedNote;
+                    console.log(`📊 Nota extraída para INTRODUCCIÓN AL DESARROLLO: ${note} (patrón: ${gradeMatch[0]})`);
+                } else {
+                    console.log(`⚠️ Nota sospechosa para INTRODUCCIÓN AL DESARROLLO: ${extractedNote}, buscando alternativas...`);
+                    // Si la nota es sospechosa, buscar números válidos en el texto
+                    const allNumbers = combinedText.match(/\b(\d{1,2})\b/g);
+                    if (allNumbers) {
+                        const validGrades = allNumbers.map(n => parseInt(n)).filter(n => n >= 6 && n <= 20 && n !== 3);
+                        if (validGrades.length > 0) {
+                            note = validGrades[0]; // Tomar la primera nota válida encontrada
+                            console.log(`📊 Nota alternativa para INTRODUCCIÓN AL DESARROLLO: ${note}`);
+                        }
+                    }
+                }
+            } else {
+                console.log('⚠️ No se pudo extraer nota para INTRODUCCIÓN AL DESARROLLO, buscando números en el texto...');
+                // Buscar cualquier número que pueda ser una nota válida
+                const allNumbers = combinedText.match(/\b(\d{1,2})\b/g);
+                if (allNumbers) {
+                    const validGrades = allNumbers.map(n => parseInt(n)).filter(n => n >= 6 && n <= 20 && n !== 3);
+                    if (validGrades.length > 0) {
+                        note = validGrades[0];
+                        console.log(`📊 Nota encontrada por búsqueda general: ${note}`);
+                    }
+                }
+            }
+            
+            // Si no se encontró ninguna nota válida, usar 0 para indicar que necesita revisión manual
+            if (note === 0) {
+                console.log('❌ No se pudo determinar la nota para INTRODUCCIÓN AL DESARROLLO. Requiere revisión manual.');
+                note = 0; // Nota 0 indica error de extracción
             }
             
             courses.push({
@@ -356,7 +401,9 @@ function extractCourses(text) {
                 note: note,
                 credits: 3,
                 lineNumber: lineIndex + 1,
-                extractionMethod: 'special'
+                extractionMethod: 'special',
+                type: 'O', // Obligatorio
+                isApproved: note >= 11
             });
             coursesFound++;
             console.log(`✅ Curso especial ${coursesFound}: 202SW0305 - INTRODUCCIÓN AL DESARROLLO (${note}/3)`);
