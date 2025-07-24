@@ -1,8 +1,18 @@
 class UNMSMCalculator {
     constructor() {
+        // Prevenir múltiples inicializaciones
+        if (window.calculatorInstance) {
+            console.warn('⚠️ UNMSMCalculator ya fue inicializado');
+            return window.calculatorInstance;
+        }
+        
         this.courses = [];
         this.periods = [];
         this.initializeEventListeners();
+        
+        // Marcar como inicializado
+        window.calculatorInstance = this;
+        console.log('✅ UNMSMCalculator inicializado correctamente');
     }
 
     initializeEventListeners() {
@@ -51,13 +61,24 @@ class UNMSMCalculator {
     handleFileSelect(e) {
         const file = e.target.files[0];
         if (file) {
+            console.log('📄 Archivo seleccionado:', file.name);
             this.processFile(file);
+            // Resetear el input para permitir seleccionar el mismo archivo nuevamente si es necesario
+            e.target.value = '';
         }
     }
 
     async processFile(file) {
+        // Prevenir procesamiento múltiple del mismo archivo
+        if (this.isProcessing) {
+            console.warn('⚠️ Ya se está procesando un archivo, ignorando...');
+            return;
+        }
+        
+        this.isProcessing = true;
+        
         try {
-            console.log('Procesando archivo:', file.name, 'Tamaño:', file.size);
+            console.log('📤 Procesando archivo:', file.name, 'Tamaño:', file.size);
             
             this.showLoading(true);
             this.showMessage('Analizando PDF con IA...', 'info');
@@ -65,7 +86,7 @@ class UNMSMCalculator {
             const formData = new FormData();
             formData.append('pdfFile', file);
 
-            console.log('Enviando archivo al servidor...');
+            console.log('🌐 Enviando archivo al servidor...');
             const response = await fetch('/upload-pdf', {
                 method: 'POST',
                 body: formData
@@ -127,6 +148,7 @@ class UNMSMCalculator {
             this.showTechnicalError(error);
         } finally {
             this.showLoading(false);
+            this.isProcessing = false; // Resetear flag de procesamiento
         }
     }
 
@@ -700,7 +722,8 @@ class UNMSMCalculator {
 
 // Initialize the calculator when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    new UNMSMCalculator();
+    // Solo inicializar una vez y hacer la instancia global
+    window.calculator = new UNMSMCalculator();
     
     // Add some nice animations
     const sections = document.querySelectorAll('.step-section');
@@ -715,6 +738,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }, index * 200);
     });
 });
-
-// Inicializar la aplicación y hacer la instancia global
-window.calculator = new UNMSMCalculator();
