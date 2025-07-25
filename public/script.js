@@ -211,13 +211,16 @@ class UNMSMCalculator {
         try {
             const selectedPeriod = document.getElementById('period-select').value;
             
+            // Filtrar cursos excluidos del cálculo
+            const coursesForCalculation = this.courses.filter(course => !course.excludeFromCalculation);
+            
             const response = await fetch('/calculate-average', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    courses: this.courses,
+                    courses: coursesForCalculation, // Solo enviar cursos no excluidos
                     selectedPeriod: selectedPeriod
                 })
             });
@@ -299,6 +302,12 @@ class UNMSMCalculator {
                 </td>
                 <td>${course.credits}</td>
                 <td class="points-cell" id="points-${courseId}">${points}</td>
+                <td class="actions-cell">
+                    <button class="delete-course-btn" onclick="window.calculator.toggleCourseFromCalculation('${courseId}')" 
+                            title="Eliminar/Restaurar curso del cálculo" id="delete-btn-${courseId}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
             `;
             tbody.appendChild(row);
         });
@@ -470,6 +479,57 @@ class UNMSMCalculator {
         }
     }
 
+    // Método para eliminar/restaurar curso del cálculo
+    toggleCourseFromCalculation(courseCode) {
+        // Buscar el curso por código
+        const courseIndex = this.courses.findIndex(course => course.code === courseCode);
+        
+        if (courseIndex === -1) {
+            this.showMessage('Error: Curso no encontrado', 'error');
+            return;
+        }
+
+        const course = this.courses[courseIndex];
+        const row = document.querySelector(`#delete-btn-${courseCode}`).closest('tr');
+        const deleteBtn = document.getElementById(`delete-btn-${courseCode}`);
+        
+        // Alternar estado de eliminación
+        course.excludeFromCalculation = !course.excludeFromCalculation;
+        
+        if (course.excludeFromCalculation) {
+            // Curso eliminado del cálculo
+            row.classList.add('course-deleted');
+            deleteBtn.innerHTML = '<i class="fas fa-undo"></i>';
+            deleteBtn.title = 'Restaurar curso al cálculo';
+            deleteBtn.style.background = '#27ae60';
+            
+            // Mostrar mensaje de confirmación
+            let courseName = course.name.length > 30 ? course.name.substring(0, 30) + '...' : course.name;
+            this.showMessage(`🗑️ Curso "${courseName}" eliminado del cálculo`, 'warning');
+        } else {
+            // Curso restaurado al cálculo
+            row.classList.remove('course-deleted');
+            row.classList.add('course-restored');
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteBtn.title = 'Eliminar curso del cálculo';
+            deleteBtn.style.background = '#e74c3c';
+            
+            // Remover clase de animación después de un tiempo
+            setTimeout(() => {
+                row.classList.remove('course-restored');
+            }, 300);
+            
+            // Mostrar mensaje de confirmación
+            let courseName = course.name.length > 30 ? course.name.substring(0, 30) + '...' : course.name;
+            this.showMessage(`✅ Curso "${courseName}" restaurado al cálculo`, 'success');
+        }
+        
+        // Recalcular automáticamente el promedio
+        this.calculateAverageOnly();
+        
+        console.log(`🔄 Curso ${courseCode} ${course.excludeFromCalculation ? 'eliminado' : 'restaurado'} del cálculo`);
+    }
+
     // Mantener la función anterior para compatibilidad, pero marcarla como deprecated
     editGrade(courseIndex) {
         console.warn('editGrade(index) está deprecated, usar editGradeByCode(code)');
@@ -497,8 +557,20 @@ class UNMSMCalculator {
             
             const selectedPeriod = document.getElementById('period-select').value;
             
+            // Filtrar cursos excluidos del cálculo
+            const coursesForCalculation = this.courses.filter(course => !course.excludeFromCalculation);
+            const excludedCourses = this.courses.filter(course => course.excludeFromCalculation);
+            
+            console.log(`📊 Cursos incluidos en el cálculo: ${coursesForCalculation.length}`);
+            if (excludedCourses.length > 0) {
+                console.log(`🗑️ Cursos excluidos del cálculo: ${excludedCourses.length}`);
+                excludedCourses.forEach(course => {
+                    console.log(`   - ${course.code}: ${course.name.substring(0, 30)}...`);
+                });
+            }
+            
             // Mostrar información de cursos editados para verificación
-            const editedCourses = this.courses.filter(course => course.editedByUser);
+            const editedCourses = coursesForCalculation.filter(course => course.editedByUser);
             if (editedCourses.length > 0) {
                 console.log('📝 Cursos editados por el usuario:');
                 editedCourses.forEach(course => {
@@ -512,7 +584,7 @@ class UNMSMCalculator {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    courses: this.courses,
+                    courses: coursesForCalculation, // Solo enviar cursos no excluidos
                     selectedPeriod: selectedPeriod
                 })
             });

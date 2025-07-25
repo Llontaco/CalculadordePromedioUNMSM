@@ -571,3 +571,130 @@ tbody tr:nth-child(even) {
         font-size: 0.9rem;
     }
 }
+
+/* Estilos para la nota informativa de emprendimiento */
+.emprendimiento-info {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    border: 1px solid #ffc107;
+    border-left: 4px solid #e67e22;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 8px;
+    color: #856404;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(230, 126, 34, 0.1);
+}
+
+.emprendimiento-info i {
+    color: #e67e22;
+    margin-right: 8px;
+}
+
+.emprendimiento-info strong {
+    color: #d68910;
+}
+
+/* Estilos para el botón de eliminar curso */
+.delete-course-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s ease;
+    margin-left: 5px;
+}
+
+.delete-course-btn:hover {
+    background: #c0392b;
+    transform: scale(1.1);
+}
+
+.delete-course-btn:active {
+    transform: scale(0.95);
+}
+
+.actions-cell {
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* Estilos para el QR de Yape */
+.donation-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.yape-qr {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.qr-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    border: 2px solid var(--accent-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: white;
+    padding: 5px;
+}
+
+.donation-text {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    text-align: center;
+    margin: 0;
+}
+
+.donation-text i {
+    color: #e74c3c;
+    margin-right: 5px;
+}
+
+.donation-text small {
+    display: block;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+/* Responsive para el QR */
+@media (max-width: 768px) {
+    .yape-qr {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .qr-image {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .donation-text {
+        font-size: 13px;
+    }
+}
+
+/* Estilos para curso eliminado */
+.course-deleted {
+    opacity: 0.5;
+    text-decoration: line-through;
+    background-color: #f8d7da;
+}
+
+.course-restored {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

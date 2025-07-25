@@ -132,6 +132,14 @@
                     <i class="fas fa-info-circle"></i>
                     <strong>Tip:</strong> Puedes editar cualquier nota haciendo clic en el ícono de lápiz <i class="fas fa-edit"></i> si detectas algún error en la extracción.
                 </div>
+                
+                <!-- Nota informativa sobre emprendimiento -->
+                <div class="emprendimiento-info">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Nota importante:</strong> En algunos casos la UNMSM no considera el curso de <strong>Emprendimiento e Innovación</strong> para el promedio. 
+                    Puedes eliminarlo del cálculo usando el ícono de basura <i class="fas fa-trash"></i> para ver el promedio igual al de tu SUM.
+                </div>
+                
                 <div class="table-container">
                     <table id="courses-table">
                         <thead>
@@ -142,8 +150,7 @@
                                 <th>Nota</th>
                                 <th>Créditos</th>
                                 <th>Puntos</th>
-                            </tr>
-                        </thead>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="courses-tbody">
@@ -169,6 +176,19 @@
         <footer class="footer">
             <p>Calculadora basada en la fórmula oficial de la Universidad Nacional Mayor de San Marcos</p>
             <p><small>Desarrollado para estudiantes UNMSM</small></p>
+            
+            <!-- QR Yape para donaciones -->
+            <div class="donation-section">
+                <div class="yape-qr">
+                    <img src="yape-qr.png" 
+                         alt="QR Yape para donaciones" class="qr-image" id="yape-qr">
+                    <p class="donation-text">
+                        <i class="fas fa-heart"></i>
+                        ¿Te ayudó la app? Apóyame con una donación
+                        <br><small>Henry Alessandro Llontop Falcon</small>
+                    </p>
+                </div>
+            </div>
         </footer>
 
         <!-- Error/Success Messages -->
