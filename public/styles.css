@@ -621,10 +621,42 @@ tbody tr:nth-child(even) {
     white-space: nowrap;
 }
 
+/* Estilos para la sección de testers */
+.testers-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.testers-text {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+    text-align: center;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.testers-text i {
+    color: #3498db;
+    margin-right: 5px;
+}
+
+.testers-text strong {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.testers-text small {
+    display: block;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 11px;
+    margin-top: 3px;
+    font-style: italic;
+}
+
 /* Estilos para el QR de Yape */
 .donation-section {
-    margin-top: 30px;
-    padding-top: 20px;
+    margin-top: 20px;
+    padding-top: 15px;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -637,13 +669,18 @@ tbody tr:nth-child(even) {
 }
 
 .qr-image {
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
     border-radius: 8px;
     border: 2px solid var(--accent-color);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     background: white;
     padding: 5px;
+    transition: transform 0.3s ease;
+}
+
+.qr-image:hover {
+    transform: scale(1.05);
 }
 
 .donation-text {
@@ -674,8 +711,8 @@ tbody tr:nth-child(even) {
     }
     
     .qr-image {
-        width: 70px;
-        height: 70px;
+        width: 100px;
+        height: 100px;
     }
     
     .donation-text {
