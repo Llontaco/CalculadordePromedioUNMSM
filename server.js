@@ -983,41 +983,39 @@ function calculateWeightedAverage(courses, selectedPeriod) {
         });
     }
     
-    // Calcular promedio ponderado (solo con cursos aprobados)
+    // Calcular promedio ponderado según fórmula UNMSM: 
+    // Σ(nota × créditos de cursos aprobados) / Σ(créditos totales de todos los cursos)
     const totalWeightedPoints = approvedCourses.reduce((sum, course) => {
         return sum + (course.note * course.credits);
     }, 0);
     
-    // CREDITAJE APROBADO: Calcular basado en el período seleccionado
-    // Incluye todos los créditos únicos cursados hasta el período seleccionado
+    // CREDITAJE TOTAL: Todos los créditos cursados (aprobados + desaprobados)
     const totalCredits = allCourses.reduce((sum, course) => {
         return sum + course.credits;
     }, 0);
     
-    // Créditos solo de cursos aprobados (nota >= 11): Para estadísticas
+    // Créditos solo de cursos aprobados (nota >= 11): Para estadísticas únicamente
     const approvedOnlyCredits = approvedCourses.reduce((sum, course) => {
         return sum + course.credits;
     }, 0);
     
-    // Créditos para promedio: Solo cursos aprobados
-    const creditsForAverage = approvedOnlyCredits;
+    // FÓRMULA UNMSM CORRECTA: Dividir puntos ponderados entre creditaje TOTAL
+    const weightedAverage = totalCredits > 0 ? totalWeightedPoints / totalCredits : 0;
     
-    const weightedAverage = creditsForAverage > 0 ? totalWeightedPoints / creditsForAverage : 0;
-    
-    console.log('=== CÁLCULO FINAL UNMSM ===');
+    console.log('=== CÁLCULO FINAL UNMSM (FÓRMULA CORREGIDA) ===');
     console.log(`💼 Creditaje total cursado: ${totalCredits} (todos los cursos únicos)`);
-    console.log(`✅ Créditos de cursos aprobados: ${approvedOnlyCredits}`);
-    console.log(`📊 Puntos ponderados: ${totalWeightedPoints}`);
-    console.log(`🎯 Promedio ponderado: ${weightedAverage.toFixed(3)}`);
+    console.log(`✅ Créditos de cursos aprobados: ${approvedOnlyCredits} (solo estadística)`);
+    console.log(`📊 Puntos ponderados: ${totalWeightedPoints} (solo de cursos aprobados)`);
+    console.log(`🎯 Promedio ponderado: ${weightedAverage.toFixed(3)} = ${totalWeightedPoints} ÷ ${totalCredits}`);
     console.log(`📈 Rendimiento: ${approvedCourses.length}/${allCourses.length} cursos aprobados (${((approvedCourses.length/allCourses.length)*100).toFixed(1)}%)`);
     
     return {
         courses: allCourses, // Todos los cursos únicos (obligatorios + electivos + adicionales)
-        totalCredits, // Creditaje total cursado
+        totalCredits, // Creditaje total cursado (USADO EN LA DIVISIÓN)
         totalWeightedPoints,
         weightedAverage: Math.round(weightedAverage * 1000) / 1000, // 3 decimales
-        approvedCredits: approvedOnlyCredits, // CORREGIDO: Solo créditos de cursos aprobados
-        creditsForAverage, // Créditos usados para el promedio (solo aprobados)
+        approvedCredits: approvedOnlyCredits, // Solo créditos de cursos aprobados (estadística)
+        creditsForAverage: totalCredits, // CORREGIDO: Ahora usa creditaje total para la división
         courseStats, // Estadísticas por tipo
         approvedStats, // Estadísticas de aprobados por tipo
         retryInfo: retryInfo.length // Cantidad de cursos con reintentos o versiones nuevas
