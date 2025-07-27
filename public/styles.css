@@ -621,6 +621,42 @@ tbody tr:nth-child(even) {
     white-space: nowrap;
 }
 
+/* Estilos para el mensaje de Ingeniería de Software */
+.software-notice {
+    margin-top: 15px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    border-radius: 8px;
+    border-left: 4px solid #fff;
+}
+
+.software-text {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 13px;
+    text-align: center;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.software-text i {
+    color: #fff;
+    margin-right: 8px;
+    font-size: 14px;
+}
+
+.software-text strong {
+    color: #fff;
+    font-weight: 600;
+}
+
+.software-text small {
+    display: block;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 11px;
+    margin-top: 5px;
+    font-style: italic;
+}
+
 /* Estilos para la sección de testers */
 .testers-section {
     margin-top: 20px;
