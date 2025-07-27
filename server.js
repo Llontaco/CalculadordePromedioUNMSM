@@ -91,11 +91,16 @@ function extractCourses(text) {
             }
         }
         
-        // Buscar líneas que contengan cursos - MEJORADO PARA MÚLTIPLES CARRERAS UNMSM
-        // Códigos de curso conocidos: INE/INO (Software), 202SI (Sistemas), 202SW (Software), 20118 (Sistemas), IS (Sistemas), etc.
-        const hasValidCode = line.match(/\b(INE|INO|202SW|202SI|IS|202|20118|[A-Z]{2,3})\d{2,4}\b/) ||
-                           line.match(/\b\d{6}[A-Z]+\d+\b/) || // Formato alternativo
-                           line.match(/\b20118\d{3,6}\b/); // Formato específico para Sistemas 20118
+        // Buscar líneas que contengan cursos - OPTIMIZADO PARA SOFTWARE Y SISTEMAS
+        // Software: INE/INO (letras + números), 202SW (formato específico)
+        // Sistemas: 20118 (números específicos), 202SI, IS
+        const hasValidCode = line.match(/\b(INE|INO)\d{2,4}\b/) || // Software tradicional
+                           line.match(/\b202SW\d{4}\b/) || // Software específico 202SW
+                           line.match(/\b202SI\d{4}\b/) || // Sistemas específico 202SI
+                           line.match(/\bIS\d{2,4}\b/) || // Sistemas IS
+                           line.match(/\b20118\d{3,6}\b/) || // Sistemas 20118
+                           line.match(/\b202\d{5,6}\b/) || // Formato genérico 202
+                           line.match(/\b[A-Z]{2,3}\d{3,4}\b/); // Otros códigos de letras
         const hasPattern = line.includes(' - ') || line.includes('P - ') || line.includes('A - ') || line.includes('E - ');
         const isLongEnough = line.length > 20;
         
@@ -111,14 +116,13 @@ function extractCourses(text) {
                 courseType = 'A'; // Adicional
             }
             
-            // Patrón principal EXPANDIDO para múltiples carreras UNMSM
-            // Software: INE002, INO101, 202SW0305
-            // Sistemas: 202SI0123, IS001, 20118001, etc.
-            // General: Cualquier combinación de letras + números
-            const mainPattern = /((?:[A-Z]{2,3}\d{2,4}|202[A-Z]{2}\d{4}|20118\d{3,6}|\d{6}[A-Z]+\d+))\s*[-–]\s*([A-ZÀ-ÿ\s,\.&\(\)ÇÁÉÍÓÚÑ]+?)(\d{1,2})(\d{1})\.\d{2}[PAE]/g;
+            // Patrón principal OPTIMIZADO para Software y Sistemas
+            // Software: INE002, INO101, 202SW0305 (FUNCIONA PERFECTO)
+            // Sistemas: 20118001, 202SI0123, IS001 (NUEVO SOPORTE)
+            const mainPattern = /((?:INE|INO)\d{2,4}|202SW\d{4}|20118\d{3,6}|202SI\d{4}|IS\d{2,4}|[A-Z]{2,3}\d{3,4})\s*[-–]\s*([A-ZÀ-ÿ\s,\.&\(\)ÇÁÉÍÓÚÑ]+?)(\d{1,2})(\d{1})\.\d{2}[PAE]/g;
             
-            // Patrón alternativo para casos más simples
-            const altPattern = /((?:[A-Z]{2,3}\d{2,4}|202[A-Z]{2}\d{4}|20118\d{3,6}|\d{6}[A-Z]+\d+))\s*[-–]\s*([A-ZÀ-ÿ\s,\.&\(\)ÇÁÉÍÓÚÑ]+?)(\d{1,2})(\d{1})\s*[PAE]/g;
+            // Patrón alternativo más simple
+            const altPattern = /((?:INE|INO)\d{2,4}|202SW\d{4}|20118\d{3,6}|202SI\d{4}|IS\d{2,4}|[A-Z]{2,3}\d{3,4})\s*[-–]\s*([A-ZÀ-ÿ\s,\.&\(\)ÇÁÉÍÓÚÑ]+?)(\d{1,2})(\d{1})\s*[PAE]/g;
             
             // Buscar con el patrón principal
             let matches = [...line.matchAll(mainPattern)];
@@ -168,11 +172,10 @@ function extractCourses(text) {
             if (matches.length === 0) {
                 console.log('🔍 Buscando con patrón flexible...');
                 
-                // Patrón más flexible EXPANDIDO para múltiples carreras
-                // Software: INE002, INO101, 202SW0305
-                // Sistemas: 202SI0123, IS001, 20118001, etc.
-                // General: Cualquier código válido
-                const flexiblePattern = /([A-Z]{2,3}\d{3,4}|202[A-Z]{2}\d{4}|20118\d{3,6}|\d{6}[A-Z]+\d+)\s*[-–]\s*([A-ZÀ-ÿ\s,\.&\(\)ÇÁÉÍÓÚÑ]{5,50}?)(\d{1,2})(\d{1})\.\d{2}[PAE]/g;
+                // Patrón flexible OPTIMIZADO para ambas carreras
+                // Software: INE002, INO101, 202SW0305 (MANTENER FUNCIONAMIENTO)
+                // Sistemas: 20118001, 202SI0123, IS001 (AGREGAR SOPORTE)
+                const flexiblePattern = /(INE\d{3,4}|INO\d{3,4}|202SW\d{4}|20118\d{3,6}|202SI\d{4}|IS\d{2,4}|[A-Z]{2,3}\d{3,4})\s*[-–]\s*([A-ZÀ-ÿ\s,\.&\(\)ÇÁÉÍÓÚÑ]{5,50}?)(\d{1,2})(\d{1})\.\d{2}[PAE]/g;
                 const flexibleMatches = [...line.matchAll(flexiblePattern)];
                 
                 flexibleMatches.forEach(match => {
@@ -602,19 +605,52 @@ function extractCoursesBackup(text) {
             currentPeriod = periodMatch[1];
         }
         
-        // Buscar líneas con códigos de curso - EXPANDIDO PARA MÚLTIPLES CARRERAS
-        if (line.match(/([A-Z]{2,3}\d{3,4}|202[A-Z]{2}\d{4}|20118\d{3,6}|\d{6}[A-Z]+\d+)/)) {
+        // Buscar líneas con códigos de curso - OPTIMIZADO PARA SOFTWARE Y SISTEMAS
+        if (line.match(/(INE|INO)\d{3,4}/) || 
+            line.match(/202SW\d{4}/) || 
+            line.match(/20118\d{3,6}/) || 
+            line.match(/202SI\d{4}/) || 
+            line.match(/IS\d{2,4}/) || 
+            line.match(/[A-Z]{2,3}\d{3,4}/)) {
             console.log('🔍 Línea con curso detectada:', line.substring(0, 80));
             
-            // Extraer código del curso - PATRÓN GENÉRICO
-            const codeMatch = line.match(/([A-Z]{2,3}\d{3,4}|202[A-Z]{2}\d{4}|20118\d{3,6}|\d{6}[A-Z]+\d+)/);
+            // Extraer código del curso - PATRÓN ESPECÍFICO PARA CADA CARRERA
+            const codeMatch = line.match(/(INE\d{3,4})/) || 
+                             line.match(/(INO\d{3,4})/) || 
+                             line.match(/(202SW\d{4})/) || 
+                             line.match(/(20118\d{3,6})/) || 
+                             line.match(/(202SI\d{4})/) || 
+                             line.match(/(IS\d{2,4})/) || 
+                             line.match(/([A-Z]{2,3}\d{3,4})/);
             if (!codeMatch) continue;
             
             const code = codeMatch[1];
             
-            // Extraer nombre del curso (entre el código y los números)
-            const nameMatch = line.match(new RegExp(`${code}\\s*[-–]\\s*([A-ZÀ-ÿ\\s,\\.&\\(\\)ÇÁÉÍÓÚÑ]+)`));
-            let name = nameMatch ? nameMatch[1].trim() : 'NOMBRE NO DISPONIBLE';
+            // Extraer nombre del curso MEJORADO - buscar múltiples patrones
+            let name = '';
+            
+            // Patrón 1: Código seguido de guión y nombre
+            let nameMatch = line.match(new RegExp(`${code}\\s*[-–]\\s*([A-ZÀ-ÿ\\s,\\.&\\(\\)ÇÁÉÍÓÚÑ]+?)(?=\\d|$)`));
+            if (nameMatch) {
+                name = nameMatch[1].trim();
+            } else {
+                // Patrón 2: Buscar texto entre el código y números
+                nameMatch = line.match(new RegExp(`${code}[\\s-–]*([A-ZÀ-ÿ\\s,\\.&\\(\\)ÇÁÉÍÓÚÑ]+?)\\d`));
+                if (nameMatch) {
+                    name = nameMatch[1].trim();
+                } else {
+                    // Patrón 3: Buscar cualquier texto después del código
+                    nameMatch = line.match(new RegExp(`${code}[\\s-–]*([A-ZÀ-ÿ\\s,\\.&\\(\\)ÇÁÉÍÓÚÑ]{5,})`));
+                    if (nameMatch) {
+                        name = nameMatch[1].trim();
+                    }
+                }
+            }
+            
+            // Si no se encontró nombre, usar valor por defecto con el código
+            if (!name || name.length < 5) {
+                name = `CURSO ${code}`;
+            }
             
             // Limpiar nombre
             name = name.replace(/[^\w\s,\.&\(\)ÀÁÈÉÌÍÒÓÙÚÑáéíóúñÇ]/g, ' ')
