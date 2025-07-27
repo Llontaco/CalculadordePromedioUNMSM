@@ -91,8 +91,10 @@ function extractCourses(text) {
             }
         }
         
-        // Buscar líneas que contengan cursos - MEJORADO PARA FORMATO REAL
-        const hasValidCode = line.includes('INO') || line.includes('202SW') || line.includes('INE');
+        // Buscar líneas que contengan cursos - MEJORADO PARA MÚLTIPLES CARRERAS UNMSM
+        // Códigos de curso conocidos: INE/INO (Software), 202SI (Sistemas), 202 (General), IS (Sistemas), etc.
+        const hasValidCode = line.match(/\b(INE|INO|202SW|202SI|IS|202|[A-Z]{2,3})\d{2,4}\b/) ||
+                           line.match(/\b\d{6}[A-Z]+\d+\b/); // Formato alternativo
         const hasPattern = line.includes(' - ') || line.includes('P - ') || line.includes('A - ') || line.includes('E - ');
         const isLongEnough = line.length > 20;
         
@@ -108,13 +110,14 @@ function extractCourses(text) {
                 courseType = 'A'; // Adicional
             }
             
-            // Patrón principal para formato UNMSM: CÓDIGO - NOMBRE + números al final
-            // Ejemplo: "INE002 - PROGRAMACIÓN Y COMPUTACIÓN52.01P"
-            // En este formato: 5 es la nota, 2 son los créditos (no 2.01)
-            const mainPattern = /((?:INE|INO|202SW)\d{2,4})\s*[-–]\s*([A-ZÀ-ÿ\s,\.&\(\)ÇÁÉÍÓÚÑ]+?)(\d{1,2})(\d{1})\.\d{2}[PAE]/g;
+            // Patrón principal EXPANDIDO para múltiples carreras UNMSM
+            // Software: INE002, INO101, 202SW0305
+            // Sistemas: 202SI0123, IS001, etc.
+            // General: Cualquier combinación de letras + números
+            const mainPattern = /((?:[A-Z]{2,3}\d{2,4}|202[A-Z]{2}\d{4}|\d{6}[A-Z]+\d+))\s*[-–]\s*([A-ZÀ-ÿ\s,\.&\(\)ÇÁÉÍÓÚÑ]+?)(\d{1,2})(\d{1})\.\d{2}[PAE]/g;
             
             // Patrón alternativo para casos más simples
-            const altPattern = /((?:INE|INO|202SW)\d{2,4})\s*[-–]\s*([A-ZÀ-ÿ\s,\.&\(\)ÇÁÉÍÓÚÑ]+?)(\d{1,2})(\d{1})\s*[PAE]/g;
+            const altPattern = /((?:[A-Z]{2,3}\d{2,4}|202[A-Z]{2}\d{4}|\d{6}[A-Z]+\d+))\s*[-–]\s*([A-ZÀ-ÿ\s,\.&\(\)ÇÁÉÍÓÚÑ]+?)(\d{1,2})(\d{1})\s*[PAE]/g;
             
             // Buscar con el patrón principal
             let matches = [...line.matchAll(mainPattern)];
@@ -164,10 +167,11 @@ function extractCourses(text) {
             if (matches.length === 0) {
                 console.log('🔍 Buscando con patrón flexible...');
                 
-                // Patrón más flexible para el formato real del PDF
-                // Ejemplo: "12018EINE002 - PROGRAMACIÓN Y COMPUTACIÓN52.01P"
-                // Donde 5 es nota, 2 es créditos
-                const flexiblePattern = /(INE\d{3}|INO\d{3}|202SW\d{4})\s*[-–]\s*([A-ZÀ-ÿ\s,\.&\(\)ÇÁÉÍÓÚÑ]{5,50}?)(\d{1,2})(\d{1})\.\d{2}[PAE]/g;
+                // Patrón más flexible EXPANDIDO para múltiples carreras
+                // Software: INE002, INO101, 202SW0305
+                // Sistemas: 202SI0123, IS001, etc.
+                // General: Cualquier código válido
+                const flexiblePattern = /([A-Z]{2,3}\d{3,4}|202[A-Z]{2}\d{4}|\d{6}[A-Z]+\d+)\s*[-–]\s*([A-ZÀ-ÿ\s,\.&\(\)ÇÁÉÍÓÚÑ]{5,50}?)(\d{1,2})(\d{1})\.\d{2}[PAE]/g;
                 const flexibleMatches = [...line.matchAll(flexiblePattern)];
                 
                 flexibleMatches.forEach(match => {
@@ -597,12 +601,12 @@ function extractCoursesBackup(text) {
             currentPeriod = periodMatch[1];
         }
         
-        // Buscar líneas con códigos de curso
-        if (line.match(/(INE\d{3}|INO\d{3}|202SW\d{4})/)) {
+        // Buscar líneas con códigos de curso - EXPANDIDO PARA MÚLTIPLES CARRERAS
+        if (line.match(/([A-Z]{2,3}\d{3,4}|202[A-Z]{2}\d{4}|\d{6}[A-Z]+\d+)/)) {
             console.log('🔍 Línea con curso detectada:', line.substring(0, 80));
             
-            // Extraer código del curso
-            const codeMatch = line.match(/(INE\d{3}|INO\d{3}|202SW\d{4})/);
+            // Extraer código del curso - PATRÓN GENÉRICO
+            const codeMatch = line.match(/([A-Z]{2,3}\d{3,4}|202[A-Z]{2}\d{4}|\d{6}[A-Z]+\d+)/);
             if (!codeMatch) continue;
             
             const code = codeMatch[1];
@@ -646,14 +650,22 @@ function extractCoursesBackup(text) {
                 }
             }
             
-            // Valores por defecto para créditos según tipo de curso UNMSM
+            // Valores por defecto para créditos según tipo de curso UNMSM - EXPANDIDO
             if (credits === 0) {
                 if (code.startsWith('INE')) {
                     credits = 2; // INE típicamente 2 créditos
                 } else if (code.startsWith('INO')) {
                     credits = 3; // INO típicamente 3 créditos  
                 } else if (code.startsWith('202SW')) {
-                    credits = 3; // 202SW típicamente 3 créditos
+                    credits = 3; // 202SW (Software) típicamente 3 créditos
+                } else if (code.startsWith('202SI')) {
+                    credits = 3; // 202SI (Sistemas) típicamente 3 créditos
+                } else if (code.startsWith('IS')) {
+                    credits = 3; // IS (Sistemas) típicamente 3 créditos
+                } else if (code.startsWith('202')) {
+                    credits = 3; // Otros 202 típicamente 3 créditos
+                } else {
+                    credits = 3; // Valor por defecto genérico
                 }
             }
             
