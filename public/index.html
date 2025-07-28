@@ -20,6 +20,39 @@
 
         <!-- Main Content -->
         <main class="main-content">
+            <!-- Step 0: Select Career -->
+            <section class="step-section" id="career-section">
+                <div class="step-header">
+                    <div class="step-number">0</div>
+                    <h2>Seleccionar tu Carrera</h2>
+                </div>
+                
+                <div class="career-selector">
+                    <div class="career-info">
+                        <h4><i class="fas fa-graduation-cap"></i> ¿Cuál es tu carrera en la UNMSM?</h4>
+                        <p>Selecciona tu carrera para optimizar la extracción de cursos según los códigos específicos de tu plan de estudios.</p>
+                    </div>
+                    
+                    <div class="career-options">
+                        <div class="career-option" data-career="SOFTWARE">
+                            <i class="fas fa-code"></i>
+                            <h3>Ingeniería de Software</h3>
+                            <p>Códigos: INE, INO, 202SW</p>
+                            <small>✅ Completamente optimizada</small>
+                        </div>
+                        
+                        <div class="career-option" data-career="SISTEMAS">
+                            <i class="fas fa-server"></i>
+                            <h3>Ingeniería de Sistemas</h3>
+                            <p>Códigos: INE, INO, 20118</p>
+                            <small>🆕 Recién agregada</small>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" id="selected-career" value="SOFTWARE">
+                </div>
+            </section>
+            
             <!-- Step 1: Upload PDF -->
             <section class="step-section" id="upload-section">
                 <div class="step-header">

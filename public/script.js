@@ -16,6 +16,9 @@ class UNMSMCalculator {
     }
 
     initializeEventListeners() {
+        // Career selection events
+        this.initializeCareerSelector();
+        
         // Upload zone events
         const uploadZone = document.getElementById('upload-zone');
         const pdfInput = document.getElementById('pdf-input');
@@ -35,6 +38,55 @@ class UNMSMCalculator {
 
         // Period selector
         document.getElementById('period-select').addEventListener('change', this.onPeriodChange.bind(this));
+    }
+
+    initializeCareerSelector() {
+        const careerOptions = document.querySelectorAll('.career-option');
+        const selectedCareerInput = document.getElementById('selected-career');
+        
+        careerOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Remove selected class from all options
+                careerOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Add selected class to clicked option
+                option.classList.add('selected');
+                
+                // Update hidden input value
+                const career = option.getAttribute('data-career');
+                selectedCareerInput.value = career;
+                
+                console.log('🎓 Carrera seleccionada:', career);
+                
+                // Update footer notice based on selection
+                this.updateCareerNotice(career);
+            });
+        });
+        
+        // Initialize with SOFTWARE as default (first option)
+        if (careerOptions.length > 0) {
+            careerOptions[0].classList.add('selected');
+            this.updateCareerNotice('SOFTWARE');
+        }
+    }
+
+    updateCareerNotice(career) {
+        const softwareNotice = document.querySelector('.software-notice');
+        const softwareText = document.querySelector('.software-text');
+        
+        if (career === 'SOFTWARE') {
+            softwareText.innerHTML = `
+                <i class="fas fa-code"></i>
+                <strong>Nota importante:</strong> Esta calculadora está diseñada específicamente para estudiantes de <strong>Ingeniería de Software</strong> de la UNMSM
+                <br><small>Los patrones de extracción están optimizados para el formato de historial académico de esta carrera</small>
+            `;
+        } else if (career === 'SISTEMAS') {
+            softwareText.innerHTML = `
+                <i class="fas fa-server"></i>
+                <strong>Nota importante:</strong> Estás usando la calculadora para <strong>Ingeniería de Sistemas</strong> de la UNMSM
+                <br><small>Función recientemente agregada - Reporta cualquier problema que encuentres</small>
+            `;
+        }
     }
 
     handleDragOver(e) {
@@ -85,8 +137,14 @@ class UNMSMCalculator {
 
             const formData = new FormData();
             formData.append('pdfFile', file);
+            
+            // Get selected career
+            const selectedCareer = document.getElementById('selected-career').value;
+            formData.append('career', selectedCareer);
+            
+            console.log('� Carrera seleccionada para procesamiento:', selectedCareer);
+            console.log('�🌐 Enviando archivo al servidor...');
 
-            console.log('🌐 Enviando archivo al servidor...');
             const response = await fetch('/upload-pdf', {
                 method: 'POST',
                 body: formData
